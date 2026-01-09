@@ -1,61 +1,73 @@
 import "dotenv/config";
 import { Hono } from "hono";
-import { WebClient } from "@slack/web-api";
 import { serve } from "@hono/node-server";
 import { cors } from "hono/cors";
+import { WebClient } from "@slack/web-api";
+import OpenAI from "openai";
 
 const app = new Hono();
-
 app.use("*", cors());
 
-// Slack Bot を準備
-const token = process.env.SLACK_BOT_TOKEN;
-if (!token) {
-  throw new Error("SLACK_BOT_TOKEN is not set");
-}
-const slack = new WebClient(token);
+// ===== Slack =====
+const slackToken = process.env.SLACK_BOT_TOKEN;
+if (!slackToken) throw new Error("SLACK_BOT_TOKEN is not set");
+const slack = new WebClient(slackToken);
 
-// Slackに送るAPI
+// ===== OpenAI =====
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Slack送信
 app.post("/api/slack/postMessage", async (c) => {
   const { channelId, text } = await c.req.json();
-
-  if (!channelId || !text) {
-    return c.json({ error: "channelId and text are required" }, 400);
-  }
-
-  await slack.chat.postMessage({
-    channel: channelId,
-    text,
-  });
-
+  await slack.chat.postMessage({ channel: channelId, text });
   return c.json({ ok: true });
 });
 
-//チャンネル取得
+// チャンネル一覧
 app.get("/api/slack/channels", async (c) => {
-  try {
-    const res = await slack.conversations.list({
-      types: "public_channel",
-      exclude_archived: true,
-    });
+  const res = await slack.conversations.list({
+    types: "public_channel",
+    exclude_archived: true,
+  });
 
-    const channels =
-      res.channels?.map((ch) => ({
-        id: ch.id,
-        name: ch.name,
-      })) ?? [];
+  const channels =
+    res.channels?.map((ch) => ({
+      id: ch.id,
+      name: ch.name,
+    })) ?? [];
 
-    return c.json({ channels });
-  } catch (err) {
-    console.error("Slack API error:", err);
-    return c.json({ error: "Slack API failed" }, 500);
-  }
+  return c.json({ channels });
 });
 
-// 🔽 これが「サーバー起動」
-serve({
-  fetch: app.fetch,
-  port: 3000,
+// ===== AI返信生成 =====
+app.post("/api/generate-replies", async (c) => {
+  const { originalMessage } = await c.req.json();
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: "Slack用の自然で短い返信文を作るアシスタントです。",
+      },
+      {
+        role: "user",
+        content: `次のメッセージに対する返信案を3つ作ってください。\n\n${originalMessage}`,
+      },
+    ],
+  });
+
+  const text = completion.choices[0].message.content ?? "";
+  const replies = text
+    .split("\n")
+    .map((r) => r.replace(/^\d+[.)]?\s*/, "").trim())
+    .filter(Boolean);
+
+  return c.json({ replies });
 });
 
+// ===== Server起動 =====
+serve({ fetch: app.fetch, port: 3000 });
 console.log("🚀 Server running on http://localhost:3000");
