@@ -11,6 +11,8 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@slack/web-api": "^7.13.0",
+    "dotenv": "^17.2.3",
     "firebase-tools": "^15.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
@@ -32,6 +34,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
+    "vite-node": "^5.2.0",
     "vitest": "^4.0.16"
   }
 }
