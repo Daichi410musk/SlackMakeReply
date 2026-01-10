@@ -18,14 +18,14 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Slack送信
+// ===== Slack送信 =====
 app.post("/api/slack/postMessage", async (c) => {
   const { channelId, text } = await c.req.json();
   await slack.chat.postMessage({ channel: channelId, text });
   return c.json({ ok: true });
 });
 
-// チャンネル一覧
+// ===== チャンネル一覧 =====
 app.get("/api/slack/channels", async (c) => {
   const res = await slack.conversations.list({
     types: "public_channel",
@@ -41,6 +41,21 @@ app.get("/api/slack/channels", async (c) => {
   return c.json({ channels });
 });
 
+// ===== ユーザー一覧（メンション用）=====
+app.get("/api/slack/users", async (c) => {
+  const res = await slack.users.list({});
+
+  const users =
+    res.members
+      ?.filter((u) => !u.is_bot && !u.deleted)
+      .map((u) => ({
+        id: u.id,
+        name: u.real_name || u.name,
+      })) ?? [];
+
+  return c.json({ users });
+});
+
 // ===== AI返信生成 =====
 app.post("/api/generate-replies", async (c) => {
   const { originalMessage } = await c.req.json();
@@ -54,13 +69,13 @@ app.post("/api/generate-replies", async (c) => {
       },
       {
         role: "user",
-        content: `次のメッセージに対する返信案を3つ作ってください。\n\n${originalMessage}`,
+        content: `次のメッセージに対する返信案を2つ作ってください。\n\n${originalMessage}`,
       },
     ],
   });
 
-  const text = completion.choices[0].message.content ?? "";
-  const replies = text
+  const raw = completion.choices[0].message.content ?? "";
+  const replies = raw
     .split("\n")
     .map((r) => r.replace(/^\d+[.)]?\s*/, "").trim())
     .filter(Boolean);

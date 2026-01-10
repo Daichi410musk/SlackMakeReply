@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 
 type Channel = { id: string; name: string };
+type User = { id: string; name: string };
 
 function App() {
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+
   const [channelId, setChannelId] = useState("");
+  const [mentionUserId, setMentionUserId] = useState("");
 
   const [originalMessage, setOriginalMessage] = useState("");
   const [replies, setReplies] = useState<string[]>([]);
@@ -17,6 +21,13 @@ function App() {
     fetch("http://localhost:3000/api/slack/channels")
       .then((res) => res.json())
       .then((data) => setChannels(data.channels));
+  }, []);
+
+  // ユーザー取得
+  useEffect(() => {
+    fetch("http://localhost:3000/api/slack/users")
+      .then((res) => res.json())
+      .then((data) => setUsers(data.users));
   }, []);
 
   // 返信生成
@@ -34,17 +45,23 @@ function App() {
 
   // Slack送信
   const sendMessage = async () => {
+    const finalText = mentionUserId ? `<@${mentionUserId}> ${text}` : text;
+
     await fetch("http://localhost:3000/api/slack/postMessage", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ channelId, text }),
+      body: JSON.stringify({
+        channelId,
+        text: finalText,
+      }),
     });
+
     alert("送信した");
   };
 
   return (
     <div style={{ padding: 20, maxWidth: 600 }}>
-      <h2>Slack Make Reply</h2>
+      <h2>Slack Reply</h2>
 
       <h3>① 元メッセージ</h3>
       <textarea
@@ -74,7 +91,20 @@ function App() {
         </div>
       ))}
 
-      <h3>③ Slack送信</h3>
+      <h3>③ メンション（任意）</h3>
+      <select
+        value={mentionUserId}
+        onChange={(e) => setMentionUserId(e.target.value)}
+      >
+        <option value="">メンションなし</option>
+        {users.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.name}
+          </option>
+        ))}
+      </select>
+
+      <h3>④ Slack送信</h3>
       <select value={channelId} onChange={(e) => setChannelId(e.target.value)}>
         <option value="">チャンネル選択</option>
         {channels.map((ch) => (
