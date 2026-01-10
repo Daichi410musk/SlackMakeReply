@@ -57,6 +57,11 @@ function App() {
     });
 
     alert("送信した");
+    setOriginalMessage("");
+    setReplies([]);
+    setText("");
+    setChannelId("");
+    setMentionUserId("");
   };
 
   return (
