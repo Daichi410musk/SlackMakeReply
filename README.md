@@ -1,4 +1,5 @@
 SlackQuickReply
+![Screen Recording 2026-01-10 at 23 22 42](https://github.com/user-attachments/assets/145148d6-0182-4957-a113-ae226b052415)
 
 A small tool that generates short reply suggestions for Slack messages and lets you send them directly.
 Frontend: Vite + React. Backend: Hono + Slack Web API + OpenAI.
