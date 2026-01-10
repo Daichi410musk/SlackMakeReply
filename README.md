@@ -22,7 +22,7 @@ Development
 
 - Backend (Hono server):
   npx tsx server/index.ts
-  * If tsx is missing: npm i -D tsx
+  ** If tsx is missing: npm i -D tsx
 
 Endpoints
 - GET /api/slack/channels
