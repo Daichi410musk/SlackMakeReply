@@ -1,4 +1,4 @@
-# SlackQuickReply
+# SlackMakeReply
 <img src="https://github.com/user-attachments/assets/145148d6-0182-4957-a113-ae226b052415" width=300px>
 
 A small tool that generates short reply suggestions for Slack messages and lets you send them directly.
