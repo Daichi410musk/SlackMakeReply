@@ -1,5 +1,14 @@
 # SlackMakeReply
-<img src="https://github.com/user-attachments/assets/145148d6-0182-4957-a113-ae226b052415" width=300px>
+
+**OverView**
+- Generation of reply text
+<img src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/4299015/67600254-e021-4960-b55e-f7648d999199.gif" width=300px>
+
+- Mention and Channel Selection
+<img src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/4299015/97393212-2e77-4aff-b19c-6f67dbcc24e5.gif" width=300px>
+
+- Edit and Send Reply
+<img src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/4299015/e6344373-fc7b-47c0-b29d-3922b6d16246.gif" width=300px>
 
 A small tool that generates short reply suggestions for Slack messages and lets you send them directly.
 Frontend: Vite + React. Backend: Hono + Slack Web API + OpenAI.
